@@ -1,5 +1,6 @@
 package Implementacao
 import java.io.File
+import java.io._
 import scala.io.Source
 import sun.security.util.Length
 import java.io.BufferedInputStream;
@@ -17,26 +18,61 @@ object Principal {
 
  
   def main(args: Array[String]): Unit = {
+    leitura(List(0, 0, 0, 0));
+    //println(tamanhoLista(List(9,23,3,56)))
+    //println(tamanhoLista(List()))
+  }
+  
+    def leitura(contadores: List[Int]) {
      val inicio = System.currentTimeMillis();
-     val input = new BufferedInputStream(new FileInputStream("src/Arquivos/pokerTest.txt")); 
+     val input = new BufferedInputStream(new FileInputStream("src/Arquivos/poker2K.txt")); 
      val br = new BufferedReader(new InputStreamReader(input));
-     while(br.ready()){
-       val line = br.readLine()
-       if(!line.isEmpty()){
-         if(quatroIguais(conversion(line.split(" ").toList).collect{ case (a: Int) => (a)}
-         .sortBy(x =>x match {case i: Int => i}), 0,0) == false){
-           if(sequencia(conversion(line.split(" ").toList).collect{ case (a: Int) => (a)}
-         .sortBy(x =>x match {case i: Int => i}), 0)==false){
-             todosDiferentes(conversion(line.split(" ").toList).collect{ case (a: Int) => (a)}
-         .sortBy(x =>x match {case i: Int => i}), 0,0)
+     escrita(preProcessamento(br, contadores), inicio);
+     br.close()
+     input.close()
+    }
+    
+    
+   def preProcessamento(br : BufferedReader, contadores: List[Int]) : List[Int] = {  
+     if(br.ready()){
+       preProcessamento(br, processamento(conversion(br.readLine().split(" ").toList).collect{ case (a: Int) => (a)}.
+          sortBy(x =>x match {case i: Int => i}), contadores) )
+     }else{
+       contadores
+     }
+   }
+   
+   def processamento(mao: List[Int], contadores: List[Int]) : List[Int] ={
+     if(quatroIguais(mao, 0) == true){
+       incrementaAlgumContador(0, contadores)
+       }else{
+         if(sequencia(mao) == true){
+           incrementaAlgumContador(1, contadores)
+         }else{
+           if(todosDiferentes(mao) == true){
+             incrementaAlgumContador(2, contadores)
+           }else{
+             incrementaAlgumContador(3, contadores)
            }
          }
        }
+   }
+   
+   def incrementaAlgumContador(index: Int, contadores: List[Int]) : List[Int] = {
+     if(index == 0){
+       contadores.head + 1 :: contadores.tail
+     }else {
+       contadores.head :: incrementaAlgumContador(index - 1, contadores.tail)
      }
-    br.close()
-    input.close()
-
-  
+   }
+   
+   def escrita(contadores: List[Int], inicio: Long) = {
+    val file = new File("src/Arquivos/saida.txt")
+    val bw = new BufferedWriter(new FileWriter(file))
+    bw.write(Math.abs(inicio - System.currentTimeMillis()) + " | " + contadores.head + " | " + contadores.tail.tail.head + " | " + contadores.tail.head)
+    bw.close()
+   }
+   
    def conversion (line: List[Any]) ={
          line.map(e => 
          if(e=="T")10
@@ -53,52 +89,56 @@ object Principal {
          else if(e=="6")6
          else if(e=="7")7
          else if(e=="8")8
-         else if(e=="9")9).tail
+         else if(e=="9")9)
      }
   
-  def increment_counter(n: Int): Int = { n + 1}
+  def valorDoIndex(index: Int, mao: List[Int]): Int ={
+    if(index == 0){
+      mao.head
+    }else{
+      valorDoIndex(index-1, mao.tail)
+    }
+  }
   
-  def quatroIguais(mao: List[Int], count4Iguais: Int, countQnt4Iguais: Int): Boolean ={
-     if(count4Iguais == 3){
-       increment_counter(countQnt4Iguais)
-       true
-     }else{
-       if(mao.length < 2 && count4Iguais < 3){
-         false
-       }else {
-         if(mao.head == mao.tail.head){
-           quatroIguais(mao.tail, count4Iguais + 1, countQnt4Iguais)
-         }else{
-           quatroIguais(mao.tail, count4Iguais, countQnt4Iguais)
-         }
-       }
-     }
+  def quatroIguais(mao: List[Int], count4Iguais: Int): Boolean ={
+    if(mao.head == valorDoIndex(3, mao) || (valorDoIndex(1, mao) == valorDoIndex(4, mao))){
+      true
+    }else{
+      false
+    }
    }
   
-  def sequencia(mao: List[Int], countQntSequencia: Int): Boolean ={
+  def sequencia(mao: List[Int]): Boolean ={
     if(mao.length < 2){
       true
     }else{
-      if(mao.head != mao.tail.head-1){
+      if(mao.head != valorDoIndex(1, mao)-1){
       false
     }else{
-      sequencia(mao.tail,countQntSequencia)
+      sequencia(mao.tail)
     }
   }
  }
   
-  def todosDiferentes(mao: List[Int], countQntDiferentes: Int, countQntNadas: Int): Boolean ={
+  def todosDiferentes(mao: List[Int]): Boolean ={
      if(mao.length<2){
-       increment_counter(countQntDiferentes)
        true
      }else{
-       if(mao.head == mao.tail.head){
-         increment_counter(countQntNadas)
+       if(mao.head == valorDoIndex(1,mao)){
          false
        }else {
-         todosDiferentes(mao.tail, countQntDiferentes, countQntNadas)
+         todosDiferentes(mao.tail)
        }
      }
    }
+  
+   /*def tamanhoLista(list: List[Int]) : Int  ={
+    tamanhoListaAux(list, 0)    
   }
+  
+  def tamanhoListaAux(list: List[Int], tamAtual: Int) : Int  ={
+    if(list.isEmpty) 0
+    if(list.tail.isEmpty) 1
+    tamanhoListaAux(list.tail, tamAtual +1)    
+  }*/
 }
