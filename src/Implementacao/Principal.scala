@@ -25,7 +25,7 @@ object Principal {
   
     def leitura(contadores: List[Int]) {
      val inicio = System.currentTimeMillis();
-     val input = new BufferedInputStream(new FileInputStream("src/Arquivos/poker2K.txt")); 
+     val input = new BufferedInputStream(new FileInputStream("src/Arquivos/poker2M.txt")); 
      val br = new BufferedReader(new InputStreamReader(input));
      escrita(preProcessamento(br, contadores), inicio);
      br.close()
@@ -69,7 +69,7 @@ object Principal {
    def escrita(contadores: List[Int], inicio: Long) = {
     val file = new File("src/Arquivos/saida.txt")
     val bw = new BufferedWriter(new FileWriter(file))
-    bw.write(Math.abs(inicio - System.currentTimeMillis()) + " | " + contadores.head + " | " + contadores.tail.tail.head + " | " + contadores.tail.head)
+    bw.write(Math.abs(inicio - System.currentTimeMillis()) + " | " + contadores.head + " | " + valorDoIndex(2, contadores) + " | " + valorDoIndex(1, contadores))
     bw.close()
    }
    
@@ -80,8 +80,6 @@ object Principal {
          else if(e=="Q")12
          else if(e=="K")13
          else if(e=="A")14
-         else if(e=="0")0
-         else if(e=="1")1
          else if(e=="2")2
          else if(e=="3")3
          else if(e=="4")4
